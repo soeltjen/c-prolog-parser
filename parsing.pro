@@ -13,19 +13,10 @@ statementlist = statement*
  
 statement = if_then_else(exp,statement,statement);
 if_Then(exp,statement);
-%compound_statement;
 while(exp,statement);
 assign(exp,exp);
-declare(exp,exp).
-
-selection_statement = if_then_else(exp,statement,statement);
-if_Then(exp,statement).
-
-%compound_statement = declaration.
-%declaration = declspec_initdecl(declaration_specifier, init_declarator).
-%declaration_specifier = type_specifier.
-%init_declarator = declarator; assign(id,exp).
-%type_specifier = type(id).
+declare(exp,exp);
+declare_assign(exp,statement).
 
 
 /* * * * * * * * * * * * * * *
@@ -88,6 +79,12 @@ s_statement(["do"|List1],List4,while(Exp,Statement)):-!,
 	List2=["while"|List3],
 	s_exp(List3,List4,Exp).
 
+s_statement([ID|List1],List3,declare_assign(Exp1,Statement)):-
+	istype(ID,Exp1),
+	s_statement(List1, List3,Statement),!.
+	%List1=["="|List2],!,
+	%s_exp(List2,List3,Exp).
+	
 s_statement([ID|List1],List3,assign(Exp1,Exp)):-
 	s_exp([ID], [], Exp1),
 	List1=["="|List2],!,
@@ -127,4 +124,4 @@ GOAL
 	%tokl("int max(int ch, int nm); char x; x = ‘a’; int y = 7; int a = 3; if (y < a) { x = ‘b’; } else if (y > a) { x = ‘c’; } else { x = ‘d’; } while (1) { x = ‘e’; }",Ans).
 	%tokl("b=2; if b then a=1 else a=2 fi; do a=a-1 while a;",Ans), s_program(Ans,Res).
 	%tokl("b=2;",Ans), s_program(Ans,Res).
-	tokl("int b; a=2;",Ans), s_program(Ans,Res).
+	tokl("int b; a=2; char c = 5;",Ans), s_program(Ans,Res).
