@@ -13,7 +13,8 @@ statementlist = statement*
 statement = if_Then_Else(exp,statement,statement);
 if_Then(exp,statement);
 while(exp,statement);
-assign(id,exp).
+assign(id,exp);
+declare(exp,exp).
 
 /* * * * * * * * * * * * * * *
  * Definition of expression  *
@@ -21,7 +22,8 @@ assign(id,exp).
 exp       = plus(exp,exp);
 minus(exp,exp);
 identifier(id);
-int(integer).
+int(integer);
+type(id).
 id        = string
 
 PREDICATES
@@ -33,6 +35,8 @@ s_statementlist(toklist,toklist,statementlist)
 s_exp(toklist,toklist,exp)
 s_exp1(toklist,toklist,exp,exp)
 s_exp2(toklist,toklist,exp)
+
+istype(id,exp)
 
 CLAUSES
 
@@ -74,8 +78,12 @@ s_statement(["do"|List1],List4,while(Exp,Statement)):-!,
 
 s_statement([ID|List1],List3,assign(Id,Exp)):-
 	isname(ID),
-	List1=["="|List2],
+	List1=["="|List2],!,
 	s_exp(List2,List3,Exp).
+
+s_statement([ID|List1],List3,declare(Exp1,Exp)):-!,
+	istype(ID,Exp1),
+	s_exp(List1,List3,Exp).
 
 s_exp(LIST1,List3,Exp):-
 	s_exp2(List1,List2,Exp1),
@@ -97,8 +105,14 @@ s_exp2([Int|Rest],Rest,int(I)):-
 s_exp2([Id|Rest],Rest,identifier(Id)):-
 	isname(Id).
 
+istype(Id,type(Id)):-
+	Id = "char",!.
+istype(Id,type(Id)):-
+	Id = "int",!.
+istype(Id,type(Id)):-
+	Id = "float",!.
+
 GOAL
-	%tokl("int max(int ch, int nm); char x; x = ‘a’; int y = 7; int a = 3; if (y < a) { x = ‘b’; } else if (y > a) { x = ‘c’; } else { x = ‘d’; } while (1) { x = ‘e’; }",Ans).
+	%tokl("int max(int ch, int nm); char x; x = â€˜aâ€™; int y = 7; int a = 3; if (y < a) { x = â€˜bâ€™; } else if (y > a) { x = â€˜câ€™; } else { x = â€˜dâ€™; } while (1) { x = â€˜eâ€™; }",Ans).
 	%tokl("b=2; if b then a=1 else a=2 fi; do a=a-1 while a;",Ans), s_program(Ans,Res).
-	tokl("b=2;",Ans), s_program(Ans,Res).
-	%tokl("int b;",Ans), s_program(Ans,Res).
+	tokl("int b; b=2;",Ans), s_program(Ans,Res).
